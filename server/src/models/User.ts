@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import bookSchema from './Book.js';
 import type { BookDocument } from './Book.js';
 
-export interface UserDocument extends Document {
+interface UserDocument extends Document {
   id: string;
   username: string;
   email: string;
@@ -15,8 +15,7 @@ export interface UserDocument extends Document {
   bookCount: number;
 }
 
-const userSchema = new Schema<UserDocument>(
-  {
+const userSchema = new Schema<UserDocument>({
     username: {
       type: String,
       required: true,
@@ -39,12 +38,16 @@ const userSchema = new Schema<UserDocument>(
   {
     toJSON: {
       virtuals: true,
+      getters: true,
     },
-  }
-);
+    toObject: {
+      virtuals: true,
+      getters: true,
+    },
+  });
 
 // hash user password
-userSchema.pre('save', async function (next) {
+userSchema.pre<UserDocument>('save', async function (next) {
   if (this.isNew || this.isModified('password')) {
     const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
